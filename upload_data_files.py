@@ -43,3 +43,4 @@ with open(args.table,"r") as table:
         next_row["Filesize"] = line[4]
         next_row["Metadata"] = line[5]
         next_row["Date"] = line[6]
+        insertResult = insert_rows(context_data_files_table,schema,table,[next_row])
