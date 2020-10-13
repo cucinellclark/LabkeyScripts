@@ -25,6 +25,8 @@ def valid_experiment():
     return True
 
 parser = argparse.ArgumentParser()
+parser.add_argument('-t','--table',required=True)
+
 
 args = parser.parse_args()
 

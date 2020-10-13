@@ -23,11 +23,12 @@ def validate_table(table,delim):
         header = header.strip().split(delim)
         if len(header) != len(table_headers):
             print("Table header lengths do not match, required headers in order: %s"%"\t".join(table_headers))
+            print("Input table headers w/ length %s: %s"%(len(header),"\t".join(header)))
             return False
     for i,h in enumerate(table_headers):
         if not h == header[i]:
             valid_table = False
-            missing_header.append(h)
+            missing_headers.append(h)
     if len(missing_headers) > 0:
         print("Missing table headers: %s"%"\t".join(missing_headers))
     return valid_table
@@ -35,16 +36,16 @@ def validate_table(table,delim):
 def translate_filesizes(table):
     new_table = []
     for row_tuple in table:
-        filesize = humanfriendly.format_size(int(row_tuple[-1]),binary=True)
-        new_row = tuple(list(row_tuple[0:-1])+[filesize])
+        filesize = humanfriendly.format_size(int(row_tuple[4]),binary=True)
+        new_row = tuple(list(row_tuple[0:4])+[filesize]+list(row_tuple[5:]))
         new_table.append(new_row)
     return new_table
 
 parser = argparse.ArgumentParser()
 parser.add_argument('-t','--table',required=True,help="File with data to be uploaded to the Data_Files table")
 parser.add_argument('-d','--delim',default="\t",help="Table delimeter")
-parser.add_argument('-c','--columns',help="Prints the required column headers for a table being submitted through this script")
-parser.add_argument('-f','--filesize',help="translate filesize from bytes to corresponding KB/MB/GB")
+parser.add_argument('-c','--columns',default=False,action='store_true',help="Prints the required column headers for a table being submitted through this script")
+parser.add_argument('-f','--filesize',default=False,action='store_true',help="translate filesize from bytes to corresponding KB/MB/GB")
 
 args = parser.parse_args()
 
@@ -70,8 +71,9 @@ context_data_files_table = create_server_context(labkey_server, project_name, co
 
 #load table into memory
 table_list = []
-with open(args.table,"r") as table:
-    for line in table:
+with open(args.table,"r") as t:
+    next(t)
+    for line in t:
         line = line.strip().split(args.delim)
         table_list.append(tuple(line))    
 
