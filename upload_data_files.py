@@ -4,6 +4,7 @@ from labkey.utils import create_server_context
 from labkey.exceptions import RequestError, QueryNotFoundError, ServerContextError, ServerNotFoundError
 from labkey.query import select_rows, update_rows, Pagination, QueryFilter, insert_rows, delete_rows, execute_sql
 from requests.exceptions import Timeout
+import check_labkey_tables as clt
 import sys, humanfriendly
 import copy
 import argparse
@@ -81,13 +82,27 @@ with open(args.table,"r") as t:
 if args.filesize: 
     table_list = translate_filesizes(table_list)
 
+#valid table keys
+bs_keys = clt.get_bacteria_sample_keys()
+assay_keys = clt.get_assay_keys()
+experiment_keys = clt.get_experiment_keys()
+
 #upload each line
 for table_row in table_list:
     next_row = {} 
     next_row["File"] = table_row[0] 
     next_row["Assay"] = table_row[1]
+    if table_row[1] not in assay_keys:
+        print("%s not in Assay table: exiting"%table_row[1])
+        sys.exit()
     next_row["Bacteria_Sample"] = table_row[2]
+    if table_row[2] not in bs_keys:
+        print("%s not in Bacteria_Sample table: exiting"%table_row[2])
+        sys.exit()
     next_row["Experiment"] = table_row[3]
+    if table_row[3] not in experiment_keys:
+        print("%s not in Experiment table: exiting"%table_row[3])
+        sys.exit()
     next_row["Filesize"] = table_row[4]
     next_row["Metadata"] = table_row[5]
     next_row["Date"] = table_row[6]
